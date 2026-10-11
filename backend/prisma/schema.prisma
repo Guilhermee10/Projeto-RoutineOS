@@ -1,0 +1,366 @@
+// Este arquivo é a "fonte da verdade" do banco de dados.
+// A cada model adicionado/alterado aqui, rodamos uma migration
+// (npx prisma migrate dev) para aplicar a mudança no Postgres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ActivityCategory {
+  TRABALHO
+  ESTUDO
+  FACULDADE
+  TREINO
+  TRANSPORTE
+  SONO
+  ALIMENTACAO
+  LAZER
+  COMPROMISSO
+  OUTROS
+}
+
+enum Priority {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum FitMode {
+  MANUAL
+  AUTO
+}
+
+enum SleepQuality {
+  RUIM
+  REGULAR
+  BOA
+  OTIMA
+}
+
+enum WorkScaleType {
+  REGULAR
+  CYCLE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String   // hash bcrypt, nunca texto puro
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities    Activity[]
+  flexibleGoals FlexibleGoal[]
+  sleepRecords  SleepRecord[]
+  studySessions StudySession[]
+  workouts      Workout[]
+  workSchedules WorkSchedule[]
+  scheduledSlots ScheduledSlot[]
+  goals         Goal[]
+  refreshTokens RefreshToken[]
+  activityCheckIns ActivityCheckIn[]
+  goalCheckIns     GoalCheckIn[]
+  notes            Note[]
+
+  // Relacionamentos que serão preenchidos nas próximas sprints:
+  // commutes       Commute[]
+
+  @@map("users")
+}
+
+// Um registro por refresh token emitido. Guardar no banco (em vez de
+// só confiar na assinatura do JWT) é o que permite REVOGAR um token
+// antes dele expirar - essencial pro logout funcionar de verdade e
+// pra poder invalidar tudo se a conta for comprometida.
+model RefreshToken {
+  id        String   @id @default(uuid())
+  // Nunca guardamos o token em texto puro - só o hash (SHA-256 é
+  // suficiente aqui, diferente de senha, não precisa de bcrypt/salt,
+  // porque o token já é longo e aleatório, não uma senha escolhida
+  // por humano vulnerável a dicionário).
+  tokenHash String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Workout {
+  id              String   @id @default(uuid())
+  date            DateTime
+  type            String   // ex: "Musculação", "Corrida"
+  durationMinutes Int
+  objective       String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Meta de treinos à qual esse treino CONTA - só se você escolher.
+  goalId  String?
+  goalRef Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@map("workouts")
+}
+
+model WorkSchedule {
+  id        String        @id @default(uuid())
+  scaleType WorkScaleType
+
+  startTime     String   // "HH:mm" - início do turno
+  endTime       String   // "HH:mm" - fim do turno
+  breakMinutes  Int      @default(0)
+
+  // Usado quando scaleType = REGULAR
+  daysOfWeek Int[]        // 0 = domingo ... 6 = sábado
+
+  // Usado quando scaleType = CYCLE (12x36, 15x2, etc.)
+  cycleStartDate    DateTime? // data de referência do 1º dia trabalhado
+  workDaysInCycle   Int?
+  restDaysInCycle   Int?
+  // Folgas fixas por cima do ciclo (0 = domingo ... 6 = sábado). Ex: ciclo
+  // 15x2, mas nunca trabalha aos domingos. Só vale pra scaleType = CYCLE.
+  daysOff           Int[]     @default([])
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("work_schedules")
+}
+
+model SleepRecord {
+  id             String        @id @default(uuid())
+  date           DateTime      // data de referência da noite (ex: a manhã em que acordou)
+  wentToSleepAt  String        // "HH:mm"
+  wokeUpAt       String        // "HH:mm"
+  interruptions  Int           @default(0)
+  quality        SleepQuality?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sleep_records")
+}
+
+model StudySession {
+  id              String   @id @default(uuid())
+  date            DateTime
+  subject         String
+  durationMinutes Int
+  content         String?
+  goal            String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Meta de estudo à qual essa sessão CONTA - só existe se você escolher.
+  // Registrar um estudo sozinho nunca mexe em nenhuma meta.
+  goalId String?
+  goalRef Goal?  @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@map("study_sessions")
+}
+
+model Activity {
+  id          String           @id @default(uuid())
+  name        String
+  category    ActivityCategory
+  description String?
+  startTime   String           // formato "HH:mm", ex: "07:00"
+  endTime     String           // formato "HH:mm", ex: "08:30"
+  daysOfWeek  Int[]            // 0 = domingo ... 6 = sábado
+  priority    Priority         @default(MEDIA)
+  location    String?
+  notes       String?
+  // Tempo de deslocamento até essa atividade, em minutos (opcional).
+  // Quando preenchido, o sistema passa a considerar automaticamente um
+  // bloco de TRANSPORTE antes e depois dela - sem precisar cadastrar
+  // isso como uma atividade separada.
+  commuteMinutes Int?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkIns ActivityCheckIn[]
+
+  @@map("activities")
+}
+
+enum SlotStatus {
+  SUGGESTED
+  CONFIRMED
+}
+
+// Meta flexível: não tem horário fixo, só uma duração e uma
+// frequência desejada por semana. O motor de otimização (Sprint 7)
+// é quem decide ONDE ela se encaixa na rotina.
+model FlexibleGoal {
+  id                String   @id @default(uuid())
+  name              String
+  durationMinutes   Int
+  frequencyPerWeek  Int
+  activityType      ActivityCategory
+  fitMode           FitMode  @default(MANUAL)
+  priority          Priority @default(MEDIA)
+  // Marca se essa meta é "leve" o suficiente pra ser sugerida durante
+  // o transporte (ex: inglês, revisão) - o usuário decide isso, o
+  // sistema não tenta adivinhar a partir da categoria.
+  suitableForCommute Boolean @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledSlots ScheduledSlot[]
+
+  @@map("flexible_goals")
+}
+
+enum GoalType {
+  ESTUDO_HORAS
+  TREINO_QUANTIDADE
+  SONO_HORAS
+  PERSONALIZADA
+}
+
+enum GoalPeriod {
+  SEMANAL
+  MENSAL
+}
+
+model Goal {
+  id     String     @id @default(uuid())
+  name   String
+  type   GoalType
+  // Usado só com ESTUDO_HORAS, pra filtrar por matéria (ex: "Inglês",
+  // "Python/Django") - assim não precisamos de um tipo pra cada matéria.
+  subject String?
+  targetValue Int    // minutos (para *_HORAS) ou quantidade (para os outros)
+  period      GoalPeriod @default(SEMANAL)
+  // Só usado quando type = PERSONALIZADA (ex: "páginas lidas", "projetos
+  // concluídos") - metas sem uma fonte de dado automática precisam que o
+  // usuário registre o progresso manualmente.
+  manualProgress Int @default(0)
+  // Quando o usuário "zerou" a meta: só registros criados depois contam.
+  progressResetAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkIns GoalCheckIn[]
+  notes    Note[]
+  studySessions StudySession[]
+  workouts      Workout[]
+
+  @@map("goals")
+}
+
+// Mesmo padrão do ActivityCheckIn: marca que o usuário "tocou" nessa
+// meta num dia específico - a existência da linha já significa
+// "feito". É um sinal de HÁBITO ("mexi nisso hoje?"), diferente do
+// `progress` (que mede horas/quantidade de verdade, calculado a
+// partir de StudySession/Workout/SleepRecord ou do manualProgress).
+model GoalCheckIn {
+  id   String   @id @default(uuid())
+  date DateTime
+  createdAt DateTime @default(now())
+
+  goalId String
+  goal   Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, date])
+  @@map("goal_checkins")
+}
+
+model ScheduledSlot {
+  id            String     @id @default(uuid())
+  date          DateTime
+  startTime     String     // "HH:mm"
+  endTime       String     // "HH:mm"
+  status        SlotStatus @default(SUGGESTED)
+  // true = essa sugestão ocupa uma janela de transporte já existente
+  // (não é tempo livre "puro" - é aproveitamento de um deslocamento)
+  duringCommute Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  flexibleGoalId String
+  flexibleGoal   FlexibleGoal @relation(fields: [flexibleGoalId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("scheduled_slots")
+}
+
+// Marca que uma Activity foi REALMENTE feita num dia específico.
+// A regra é simples de propósito: a EXISTÊNCIA da linha já significa
+// "feito" - não tem campo `completed`. Marcar = criar; desmarcar =
+// apagar. O @@unique garante um check-in só por atividade por dia
+// (não dá pra marcar a mesma atividade "feita" duas vezes no mesmo dia).
+model ActivityCheckIn {
+  id   String   @id @default(uuid())
+  date DateTime
+  createdAt DateTime @default(now())
+
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, date])
+  @@map("activity_checkins")
+}
+
+// Anotações: texto livre com listas e checklists simples. O conteúdo é
+// guardado como texto puro (linhas "- item" e "- [ ] tarefa" / "- [x] feita"),
+// então não precisa de um editor rico nem de uma tabela de itens.
+model Note {
+  id       String  @id @default(uuid())
+  title    String  @default("")
+  content  String  @default("")
+  tags     String[]
+  pinned   Boolean @default(false)
+  archived Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Vínculo opcional com uma meta. Se a meta for apagada, a nota fica
+  // (goalId vira null) - anotação não deve sumir junto.
+  goalId String?
+  goal   Goal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  @@index([userId, archived])
+  @@map("notes")
+}

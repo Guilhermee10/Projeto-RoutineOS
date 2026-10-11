@@ -1,0 +1,190 @@
+/* Telas existentes (Atividades, Sono, Estudos, Treinos, Trabalho, Metas,
+   Otimização, Relatório, Calendário e Login). Mesmos nomes de classe de
+   antes, só que agora lendo os tokens do novo sistema de design. */
+
+.page > h1 { margin-bottom: var(--s-2); }
+.page > p.muted { margin-bottom: var(--s-5); }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
+}
+
+/* ---------- Formulários ---------- */
+form.card { display: flex; flex-direction: column; gap: var(--s-4); }
+.form-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
+.form-row > label { flex: 1; min-width: 140px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-1); }
+
+.days-picker { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.day-chip {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-2);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.day-chip:hover { border-color: var(--accent-line); color: var(--text); }
+.day-chip.active { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+.day-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.checkbox-label { flex-direction: row; align-items: center; gap: var(--s-2); }
+
+/* ---------- Listas de cadastro ---------- */
+.activity-list { display: flex; flex-direction: column; gap: var(--s-3); list-style: none; }
+.activity-list > .card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-bottom: 0;
+  padding: var(--s-4) var(--s-5);
+}
+.activity-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.activity-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.goal-title-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.checkin-toggle { flex-direction: row; align-items: center; gap: var(--s-2); flex-shrink: 0; cursor: pointer; }
+.agenda-item-done { color: var(--text-2); text-decoration: line-through; text-decoration-color: var(--text-3); }
+
+/* ---------- Estatísticas simples ---------- */
+.stats-grid { display: flex; flex-wrap: wrap; gap: var(--s-6); }
+.stats-grid > div { display: flex; flex-direction: column; gap: 2px; }
+.stats-grid strong { font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+
+.category-list,
+.agenda-list { display: flex; flex-direction: column; list-style: none; }
+.category-list li,
+.agenda-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.category-list li:last-child,
+.agenda-list li:last-child { border-bottom: none; }
+.agenda-time { margin-right: var(--s-3); color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- Navegação de semana (Calendário) ---------- */
+.week-nav { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); font-size: var(--fs-sm); }
+
+/* ---------- Calendário semanal ---------- */
+.calendar-wrapper { overflow-x: auto; padding: var(--s-4); }
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 52px repeat(7, minmax(110px, 1fr));
+  min-width: 820px;
+}
+.calendar-gutter { position: relative; }
+.calendar-day-header {
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.calendar-gutter-body,
+.calendar-day-body { position: relative; }
+.calendar-hour-label {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.calendar-hour-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--border); }
+.calendar-day-column { border-left: 1px solid var(--border); }
+.calendar-block {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  padding: 2px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 6px;
+  border-left: 3px solid var(--block-color, var(--c-slate));
+  background: var(--surface-3);
+  background: color-mix(in srgb, var(--block-color, var(--c-slate)) 22%, var(--surface));
+  color: var(--text);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  cursor: default;
+  transition: background var(--t-fast) var(--ease);
+}
+.calendar-block:hover { background: color-mix(in srgb, var(--block-color, var(--c-slate)) 34%, var(--surface)); }
+
+/* ---------- Login / Cadastro ---------- */
+.auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--s-4); }
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--s-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.auth-card h1 { text-align: center; font-weight: 800; letter-spacing: -0.03em; }
+.auth-subtitle { margin: 0; text-align: center; color: var(--text-2); }
+.auth-footer { margin: 0; text-align: center; font-size: var(--fs-sm); color: var(--text-2); }
+.auth-footer a { font-weight: 600; }
+
+/* ---------- Configurações ---------- */
+.settings-account { display: flex; align-items: center; gap: var(--s-4); }
+.settings-account > div { flex: 1; min-width: 0; }
+.settings-account p { margin: 2px 0 0; }
+.settings-links { list-style: none; display: flex; flex-direction: column; gap: var(--s-4); }
+.settings-links p { margin: 2px 0 0; }
+
+.field-group { display: flex; flex-direction: column; gap: var(--s-3); margin-bottom: var(--s-4); }
+.field-group p { margin: 0; }
+
+/* ---------- Anotações ---------- */
+.notes-toolbar { display: flex; gap: var(--s-3); align-items: center; margin-bottom: var(--s-3); }
+.notes-toolbar input { flex: 1; min-width: 0; }
+.notes-tags { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-5); }
+.notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--s-4); align-items: start; }
+.note-card { display: flex; flex-direction: column; gap: var(--s-3); }
+.note-card.is-pinned { border-color: var(--accent-line); }
+.note-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.note-card-title { font-size: var(--fs-lg); margin: 0; overflow-wrap: anywhere; }
+.note-pin { font-size: 16px; opacity: 0.7; transition: opacity var(--t-fast), transform var(--t-fast); }
+.note-pin:hover { opacity: 1; transform: scale(1.15); }
+.note-card-foot { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-2); }
+.note-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.note-date { margin-left: auto; font-size: var(--fs-xs); }
+.note-content { display: flex; flex-direction: column; gap: var(--s-1); overflow-wrap: anywhere; }
+.note-line { margin: 0; line-height: 1.5; }
+.note-bullet { display: flex; gap: var(--s-2); }
+.note-check { display: flex; align-items: flex-start; gap: var(--s-2); cursor: pointer; }
+.note-check input { margin-top: 5px; width: auto; flex-shrink: 0; }
+.note-check.is-done span { color: var(--text-3); text-decoration: line-through; }
+.note-more { color: var(--text-3); }
+.note-editor { display: flex; flex-direction: column; gap: var(--s-3); margin-bottom: var(--s-5); }
+.note-title-input { font-size: var(--fs-lg); font-weight: 700; }
+.note-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); font-size: var(--fs-sm); }
+.note-textarea { min-height: 200px; resize: vertical; line-height: 1.6; font-family: inherit; }
+.quick-note { display: flex; gap: var(--s-2); margin-bottom: var(--s-4); }
+.quick-note input { flex: 1; min-width: 0; }
+.quick-note-list { list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
+.quick-note-item { display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-3) var(--s-4); border-radius: var(--r-md); background: var(--surface-2); color: var(--text); }
+.quick-note-item:hover { background: var(--surface-3); }
+.quick-note-item .chip { align-self: flex-start; }
+.note-text { color: var(--text); }

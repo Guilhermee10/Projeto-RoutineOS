@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: routineos-postgres
+    restart: unless-stopped
+    environment:
+      # Valores vêm do arquivo .env da raiz (ver .env.example). Os padrões
+      # abaixo existem só para o ambiente LOCAL continuar funcionando.
+      POSTGRES_USER: ${POSTGRES_USER:-routineos_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-routineos}
+    ports:
+      # 127.0.0.1: o banco só aceita conexões da própria máquina, não da rede
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - routineos_pgdata:/var/lib/postgresql/data
+
+volumes:
+  routineos_pgdata:

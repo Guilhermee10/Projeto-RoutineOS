@@ -1,0 +1,204 @@
+/* Componentes reutilizáveis (usados em várias telas). */
+
+/* ---------- Painel (Card) ----------
+   .panel é o container novo; .card é o nome legado usado pelas telas
+   antigas e herda o mesmo visual (só ganha a margem inferior que elas
+   esperavam). */
+.panel,
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  transition: border-color var(--t-fast) var(--ease);
+}
+.panel:hover,
+.card:hover { border-color: var(--border-strong); }
+.card { margin-bottom: var(--s-4); }
+.card > h2 { margin-bottom: var(--s-3); }
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.card-title { font-size: var(--fs-md); }
+.card-sub { margin: 2px 0 0; font-size: var(--fs-sm); color: var(--text-2); }
+.card-action { display: flex; align-items: center; gap: var(--s-2); flex-shrink: 0; }
+
+.empty-state { color: var(--text-2); margin: 0; }
+.empty-state a { font-weight: 600; }
+
+/* ---------- Chip / tag ---------- */
+.chip,
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+.chip--accent, .tag { background: var(--accent-soft); color: var(--accent); }
+.chip--success { background: var(--success-soft); color: var(--success); }
+.chip--warning { background: var(--warning-soft); color: var(--warning); }
+.chip--danger { background: var(--danger-soft); color: var(--danger); }
+
+/* ---------- Barra de progresso ---------- */
+.progress {
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.progress--sm { height: 4px; }
+.progress--lg { height: 8px; }
+.progress-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 700ms var(--ease);
+}
+.progress-fill--success { background: var(--success); }
+.progress-fill--warning { background: var(--warning); }
+.progress-fill--danger { background: var(--danger); }
+
+/* Barra legada (tela de Metas) */
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  margin: var(--s-2) 0;
+  border-radius: var(--r-pill);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 500ms var(--ease);
+}
+
+/* ---------- Avatar ---------- */
+.avatar {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.avatar--sm { width: 30px; height: 30px; font-size: var(--fs-xs); }
+.avatar--lg { width: 56px; height: 56px; font-size: var(--fs-lg); }
+
+/* ---------- Ícone ---------- */
+.icon { flex-shrink: 0; }
+
+/* ---------- Botão de check (timeline, metas) ---------- */
+.check-btn {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  color: transparent;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.check-btn:hover:not(:disabled) { border-color: var(--accent); }
+.check-btn:active:not(:disabled) { transform: scale(0.9); }
+.check-btn[aria-checked='true'] {
+  background: var(--success);
+  border-color: var(--success);
+  color: #07140e;
+}
+.check-btn svg { width: 14px; height: 14px; }
+
+/* ---------- Cartão de métrica ---------- */
+.stat-card { padding: var(--s-5); }
+.stat-head { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--surface-3);
+  font-size: 18px;
+}
+.stat-title { flex: 1; font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); letter-spacing: 0; }
+.stat-value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-1);
+  font-variant-numeric: tabular-nums;
+}
+.stat-value-main { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; }
+.stat-value-target { font-size: var(--fs-base); font-weight: 600; color: var(--text-3); }
+.stat-hint { margin: 0 0 var(--s-3); font-size: var(--fs-sm); color: var(--text-2); }
+.stat-card .progress { margin-top: var(--s-3); }
+
+/* ---------- Notificações (sino no topo) ---------- */
+.notification-bell { position: relative; }
+.notification-bell-button { position: relative; }
+.notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+.notification-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--s-2));
+  z-index: 60;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.notification-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+.notification-list { list-style: none; max-height: 320px; overflow-y: auto; }
+.notification-list li {
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--border);
+}
+.notification-list li:last-child { border-bottom: none; }

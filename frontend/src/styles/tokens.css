@@ -1,0 +1,79 @@
+/* ==========================================================
+   RoutineOS - design tokens
+   Tudo que é cor, tipografia, espaçamento e movimento mora aqui.
+   Os outros arquivos CSS só consomem estas variáveis.
+   ========================================================== */
+:root {
+  color-scheme: dark;
+
+  /* Superfícies (do mais fundo ao mais elevado) */
+  --bg: #0b0c10;
+  --surface: #12141a;
+  --surface-2: #171a21;
+  --surface-3: #1f232c;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* Texto */
+  --text: #eceef4;
+  --text-2: #a4abbb;
+  --text-3: #6c7387;
+
+  /* Acento único (índigo). --accent é para texto/ícone/linha sobre
+     fundo escuro; --accent-fill é o preenchimento de botões (escuro o
+     bastante pra texto branco passar contraste AA). */
+  --accent: #7c83ff;
+  --accent-fill: #5b63e8;
+  --accent-fill-hover: #6c74f0;
+  --accent-hover: #9aa0ff;
+  --accent-soft: rgba(124, 131, 255, 0.13);
+  --accent-line: rgba(124, 131, 255, 0.38);
+
+  /* Cores com significado - nunca decorativas */
+  --success: #3ecf8e;
+  --success-soft: rgba(62, 207, 142, 0.14);
+  --warning: #f5b942;
+  --warning-soft: rgba(245, 185, 66, 0.14);
+  --danger: #f26d6d;
+  --danger-soft: rgba(242, 109, 109, 0.14);
+
+  /* Paleta restrita para categorias (gráficos e calendário) */
+  --c-indigo: #7c83ff;
+  --c-sky: #58a6ff;
+  --c-violet: #a78bfa;
+  --c-slate: #8b93a7;
+
+  /* Tipografia */
+  --font: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.625rem;
+  --fs-2xl: 2.25rem;
+
+  /* Espaçamento (escala de 4px) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+
+  /* Raios: o tamanho acompanha a hierarquia do elemento */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* Layout */
+  --sidebar-w: 264px;
+  --sidebar-w-compact: 76px;
+
+  /* Movimento */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-fast: 140ms;
+  --t-med: 260ms;
+}

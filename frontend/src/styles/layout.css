@@ -1,0 +1,193 @@
+/* Estrutura da aplicação: sidebar, topbar e container de página. */
+.app-shell { min-height: 100vh; }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-4) var(--s-3);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  transition: width var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--s-2) var(--s-3) var(--s-5);
+}
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--accent-fill);
+  color: #fff;
+}
+.brand-name {
+  font-size: var(--fs-md);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+.nav-section { display: flex; flex-direction: column; gap: 2px; }
+.nav-section-title {
+  padding: 0 var(--s-3);
+  margin-bottom: var(--s-1);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px var(--s-3);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-weight: 500;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.nav-item.active .icon { color: var(--accent); }
+.nav-label { white-space: nowrap; }
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+}
+.sidebar-user {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-user-text { min-width: 0; }
+.sidebar-user-name,
+.sidebar-user-email {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-user-name { font-size: var(--fs-sm); font-weight: 600; }
+.sidebar-user-email { font-size: var(--fs-xs); color: var(--text-3); }
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.icon-btn:hover { background: var(--surface-3); color: var(--text); }
+
+.sidebar-overlay { display: none; }
+
+/* ---------- Área principal ---------- */
+.main {
+  min-height: 100vh;
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--t-med) var(--ease);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-6);
+  background: rgba(11, 12, 16, 0.86);
+  backdrop-filter: blur(10px);
+}
+.topbar-left { flex: 1; min-width: 0; }
+.topbar-right { display: flex; align-items: center; gap: var(--s-3); }
+.topbar-user { display: flex; align-items: center; gap: 10px; }
+.topbar-user-name { font-size: var(--fs-sm); font-weight: 600; }
+.topbar-date { margin: 0; font-size: var(--fs-sm); color: var(--text-2); }
+.menu-button { display: none; }
+
+.greeting-title {
+  font-size: var(--fs-xl);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.greeting-date { margin: 2px 0 0; font-size: var(--fs-base); color: var(--text-2); }
+
+.page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--s-2) var(--s-6) var(--s-7);
+}
+.page--narrow { max-width: 880px; }
+
+/* ---------- Tablet: sidebar compacta (só ícones) ---------- */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .sidebar { width: var(--sidebar-w-compact); padding-inline: var(--s-3); }
+  .main { margin-left: var(--sidebar-w-compact); }
+  .brand-name,
+  .nav-label,
+  .sidebar-user-text { display: none; }
+  .sidebar-brand { justify-content: center; padding-inline: 0; }
+  .nav-section-title { height: 1px; margin: var(--s-1) var(--s-3); padding: 0; font-size: 0; background: var(--border); }
+  .nav-item { justify-content: center; padding: 11px; }
+  .sidebar-footer { flex-direction: column; gap: var(--s-2); }
+  .sidebar-user { justify-content: center; flex: none; }
+  .page, .topbar { padding-inline: var(--s-5); }
+}
+
+/* ---------- Celular: sidebar vira drawer ---------- */
+@media (max-width: 767px) {
+  .sidebar {
+    width: min(84vw, 300px);
+    transform: translateX(-100%);
+  }
+  .sidebar.is-open {
+    transform: none;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.55);
+  }
+  .sidebar-overlay { display: block; position: fixed; inset: 0; z-index: 45; }
+  .main { margin-left: 0; }
+  .menu-button { display: inline-grid; }
+  .topbar { padding: var(--s-3) var(--s-4); gap: var(--s-3); }
+  .topbar-user-name { display: none; }
+  .greeting-title { font-size: var(--fs-lg); }
+  .greeting-date { font-size: var(--fs-sm); }
+  .page { padding: var(--s-2) var(--s-4) var(--s-6); }
+}
