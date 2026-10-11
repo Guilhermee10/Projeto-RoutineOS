@@ -19,10 +19,15 @@ export const CATEGORY_LABELS = {
   OUTROS: 'Outros',
 };
 
-// Mesma convenção de data usada no backend (dia de calendário em UTC)
-// - ver utils/dateUtils.js no backend para o porquê.
+// "Hoje" = o dia do calendário LOCAL do usuário, no formato AAAA-MM-DD
+// (é o que o backend também usa em getToday()). Antes isso usava
+// toISOString() (UTC): no Brasil, depois das 21h o "hoje" virava amanhã
+// e check-ins/metas do dia apareciam errados à noite.
 export function getTodayDateString() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 // Devolve as 7 datas (strings "AAAA-MM-DD") de uma semana, segunda a

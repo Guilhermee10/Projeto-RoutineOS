@@ -40,6 +40,16 @@ function WorkScheduleForm({ initialValues, onSubmit, onCancel, submitting }) {
 
   const daysOff = DAYS_OF_WEEK.map((d) => d.value).filter((d) => !form.daysOfWeek.includes(d));
 
+  // Ao trocar pro modo "folga" com nenhum dia de trabalho marcado, começa com
+  // TODOS os dias como trabalho (nenhuma folga): assim você só clica nos dias
+  // que quer de folga, em vez de ver os 7 dias marcados como folga.
+  function switchToOffMode() {
+    setPickMode('off');
+    setForm((prev) =>
+      prev.daysOfWeek.length === 0 ? { ...prev, daysOfWeek: DAYS_OF_WEEK.map((d) => d.value) } : prev
+    );
+  }
+
   function toggleDay(day) {
     setForm((prev) => ({
       ...prev,
@@ -131,7 +141,7 @@ function WorkScheduleForm({ initialValues, onSubmit, onCancel, submitting }) {
             <button
               type="button"
               className={pickMode === 'off' ? 'day-chip active' : 'day-chip'}
-              onClick={() => setPickMode('off')}
+              onClick={() => switchToOffMode()}
             >
               Escolher dias de folga
             </button>

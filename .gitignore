@@ -3,24 +3,21 @@ node_modules/
 dist/
 build/
 coverage/
- 
+
 # Segredos - NUNCA versionar. Só os arquivos *.example entram no Git.
--Guilherme.env
 .env
 .env.*
-*.env
 !.env.example
-!*.env.example
 *.pem
 *.key
 *.p12
 secrets/
 .aws/
- 
+
 # Testes E2E (artefatos)
 cypress/videos/
 cypress/screenshots/
- 
+
 # Logs, SO, editores
 *.log
 npm-debug.log*
@@ -28,11 +25,10 @@ npm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
- 
+
 # Dados locais
 *.sqlite
 *.db
 pgdata/
- 
+
 # Importante: backend/prisma/migrations/ DEVE ser versionada (não ignore).
- 

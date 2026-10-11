@@ -620,3 +620,23 @@ routineos/
 ## Segurança
 
 Resumo das práticas aplicadas e checklist de publicação em [SECURITY.md](SECURITY.md). Novidades: validação de variáveis de ambiente na partida (`src/config/env.js`), CORS restrito (`CORS_ORIGIN`), limite de body, rate limit geral, bcrypt custo 12, senha mínima de 8 caracteres, login com tempo constante, JWT com algoritmo fixado, Postgres local só em `127.0.0.1` e Dependabot.
+
+## Testes E2E (Cypress)
+
+Os testes ficam em `cypress/e2e/` e cobrem: autenticação, atividades (criar/editar/remover e check-in), metas com vínculo de estudo (regressão do bug de "estudo marca meta sozinho"), anotações com checklist e escala de trabalho com folgas.
+
+**Pré-requisitos** (cada um num terminal, a partir da raiz do projeto):
+
+```
+docker compose up -d                                   # banco
+cd backend;  $env:AUTH_RATE_LIMIT_MAX=1000; npm run dev  # API (PowerShell)
+cd frontend; npm run dev                               # frontend em :5173
+npm install                                            # na raiz, 1ª vez (instala o Cypress)
+npm run cy:open                                        # interface visual
+npm run cy:run                                         # ou: roda tudo sem interface
+```
+
+- `AUTH_RATE_LIMIT_MAX` só existe para os testes (eles criam vários usuários em poucos minutos); em produção o limite é sempre 10.
+- Cada teste cria um usuário novo (`e2e+...@routineos.test`) direto pela API e injeta o token no navegador (`cypress/support/commands.js`), em vez de logar pela tela toda vez. Só `auth.cy.js` usa a tela de login.
+- Para limpar os usuários de teste do banco de desenvolvimento:
+  `docker exec -it routineos-postgres psql -U routineos_user -d routineos -c "DELETE FROM users WHERE email LIKE 'e2e+%@routineos.test';"`
