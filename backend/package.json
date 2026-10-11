@@ -10,7 +10,7 @@
     "test": "jest tests/unit --runInBand"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^5.2.1",
     "dotenv": "^16.4.5",
     "cors": "^2.8.5",
     "helmet": "^7.1.0",
