@@ -1,5 +1,7 @@
 # RoutineOS
 
+![CI](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml/badge.svg)
+
 Plataforma pessoal de organização, acompanhamento e otimização de rotina.
 
 > Projeto em desenvolvimento (correção: edição de registros quebrava por campos extras no payload - whitelist de campos nos services).
@@ -659,3 +661,16 @@ docker compose -f docker-compose.yml -f docker-compose.app.yml up -d --build
 - Imagem do backend em estágios (`build`/`migrate`/`runtime`): a final só tem dependências de produção e roda como usuário `node`, não root. O frontend é compilado pelo Vite e servido por nginx sem root.
 - `JWT_SECRET` é obrigatório (o compose recusa subir sem ele) e, em produção, o backend recusa segredo fraco.
 - Parar: `docker compose -f docker-compose.yml -f docker-compose.app.yml down` (adicione `-v` só se quiser apagar o banco).
+
+## CI (GitHub Actions)
+
+`.github/workflows/ci.yml` roda a cada push na `main` e em todo pull request:
+
+| Job | O que faz |
+|---|---|
+| `secrets-check` | falha se algum `.env`/`*.env` estiver versionado |
+| `backend` | `prisma generate`, testes Jest e `npm audit` (alta/crítica) |
+| `frontend` | build de produção e `npm audit` |
+| `e2e` | sobe Postgres + API + frontend e roda o Cypress (anexa capturas se falhar) |
+
+Segurança do pipeline: permissões mínimas (`contents: read`), segredos de CI só de um banco descartável, `concurrency` para cancelar execuções antigas. Evolução possível: fixar as actions por SHA e proteger a `main` exigindo CI verde.

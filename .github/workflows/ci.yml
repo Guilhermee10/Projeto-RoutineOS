@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Menor privilégio: o workflow só pode LER o repositório
+permissions:
+  contents: read
+
+# Um push novo cancela a execução anterior da mesma branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Falha se algum arquivo de segredo (.env, *.env) estiver versionado.
+  # É a última linha de defesa caso o .gitignore falhe.
+  secrets-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Nenhum arquivo .env versionado
+        run: |
+          leaked=$(git ls-files | grep -Ei '(^|/)(\.env(\..*)?|[^/]*\.env)$' | grep -v '\.env\.example$' || true)
+          if [ -n "$leaked" ]; then
+            echo "Arquivos de segredo versionados:"
+            echo "$leaked"
+            exit 1
+          fi
+          echo "OK: nenhum .env versionado."
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Testes unitários (Jest)
+        run: npm test
+      - name: Auditoria de dependências (só falha em severidade alta/crítica)
+        run: npm audit --omit=dev --audit-level=high
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build de produção
+        run: npm run build
+      - name: Auditoria de dependências
+        run: npm audit --omit=dev --audit-level=high
+
+  # Testes ponta a ponta: sobe banco + API + frontend e roda o Cypress.
+  e2e:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: routineos_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_user -d routineos_ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Valores só para o CI (banco descartável) - nenhum segredo real
+      DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/routineos_ci
+      JWT_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
+      CORS_ORIGIN: http://127.0.0.1:5173
+      AUTH_RATE_LIMIT_MAX: 1000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - name: Instalar backend e frontend
+        run: |
+          npm --prefix backend ci
+          npm --prefix frontend ci
+      - name: Preparar o banco (migrations)
+        run: |
+          npx --prefix backend prisma generate --schema backend/prisma/schema.prisma
+          npx --prefix backend prisma migrate deploy --schema backend/prisma/schema.prisma
+      - name: Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm --prefix backend start, npm --prefix frontend run dev
+          wait-on: 'http://127.0.0.1:3333/api/health, http://127.0.0.1:5173'
+          wait-on-timeout: 120
+          config: baseUrl=http://127.0.0.1:5173
+      - name: Guardar capturas de tela se algo falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
