@@ -31,7 +31,7 @@ describe('Metas e estudos', () => {
       cy.field('Duração').type('30');
       cy.field('Contar para uma meta').select('Curso de AWS');
       cy.contains('button', 'Salvar').click();
-      cy.contains('.card', 'AWS').should('contain', 'Curso de AWS');
+      cy.contains('li.card', 'AWS').should('contain', 'Curso de AWS');
 
       cy.visit('/goals');
       cy.contains('.card', 'Curso de AWS').should('contain', '30min / 1h (50%)');
