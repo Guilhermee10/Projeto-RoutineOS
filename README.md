@@ -640,3 +640,22 @@ npm run cy:run                                         # ou: roda tudo sem inter
 - Cada teste cria um usuário novo (`e2e+...@routineos.test`) direto pela API e injeta o token no navegador (`cypress/support/commands.js`), em vez de logar pela tela toda vez. Só `auth.cy.js` usa a tela de login.
 - Para limpar os usuários de teste do banco de desenvolvimento:
   `docker exec -it routineos-postgres psql -U routineos_user -d routineos -c "DELETE FROM users WHERE email LIKE 'e2e+%@routineos.test';"`
+
+## Docker
+
+**Desenvolvimento (padrão):** `docker compose up -d` sobe só o Postgres; backend e frontend rodam com `npm run dev`.
+
+**Sistema inteiro em containers** (banco + migrations + API + frontend):
+
+```
+# 1) na raiz, crie o .env a partir do modelo e preencha o JWT_SECRET
+copy .env.example .env
+# 2) suba tudo
+docker compose -f docker-compose.yml -f docker-compose.app.yml up -d --build
+```
+
+- Frontend: http://localhost:8080 · API: http://localhost:3333/api/health
+- Ordem de subida: `postgres` (healthcheck) → `migrate` (roda `prisma migrate deploy` e termina) → `backend` → `frontend`.
+- Imagem do backend em estágios (`build`/`migrate`/`runtime`): a final só tem dependências de produção e roda como usuário `node`, não root. O frontend é compilado pelo Vite e servido por nginx sem root.
+- `JWT_SECRET` é obrigatório (o compose recusa subir sem ele) e, em produção, o backend recusa segredo fraco.
+- Parar: `docker compose -f docker-compose.yml -f docker-compose.app.yml down` (adicione `-v` só se quiser apagar o banco).

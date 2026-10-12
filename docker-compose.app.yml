@@ -1,0 +1,53 @@
+# Sobe o sistema INTEIRO em containers (banco + migrations + API + frontend).
+# Use junto com o arquivo base:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.app.yml up -d --build
+#
+# Exige JWT_SECRET no arquivo .env da raiz (ver .env.example).
+services:
+  # Aplica as migrations (prisma migrate deploy) e termina. A API só sobe depois.
+  migrate:
+    build:
+      context: ./backend
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-routineos_user}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-routineos}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    container_name: routineos-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      DATABASE_URL: postgresql://${POSTGRES_USER:-routineos_user}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-routineos}
+      # Sem valor padrão de propósito: o compose recusa subir sem um segredo real
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no arquivo .env da raiz (veja .env.example)}
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      # Endereço pelo qual o NAVEGADOR acessa o frontend
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8081}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:3333:3333"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3333/api}
+    container_name: routineos-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:8081:8080"

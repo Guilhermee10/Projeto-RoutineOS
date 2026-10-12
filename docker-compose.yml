@@ -1,3 +1,6 @@
+# Ambiente de DESENVOLVIMENTO: só o banco. Backend e frontend rodam na sua
+# máquina com "npm run dev". Para subir TUDO em containers, veja
+# docker-compose.app.yml (README, seção "Docker").
 services:
   postgres:
     image: postgres:16-alpine
@@ -14,6 +17,11 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - routineos_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-routineos_user} -d ${POSTGRES_DB:-routineos}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   routineos_pgdata:
