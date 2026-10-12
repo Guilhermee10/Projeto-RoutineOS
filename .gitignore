@@ -8,6 +8,7 @@ coverage/
 .env
 .env.*
 !.env.example
+backend/-Guilherme.env
 *.pem
 *.key
 *.p12
