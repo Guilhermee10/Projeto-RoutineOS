@@ -674,3 +674,8 @@ docker compose -f docker-compose.yml -f docker-compose.app.yml up -d --build
 | `e2e` | sobe Postgres + API + frontend e roda o Cypress (anexa capturas se falhar) |
 
 Segurança do pipeline: permissões mínimas (`contents: read`), segredos de CI só de um banco descartável, `concurrency` para cancelar execuções antigas. Evolução possível: fixar as actions por SHA e proteger a `main` exigindo CI verde.
+
+## Fuso horário (data local do usuário)
+
+O servidor roda em UTC (AWS), mas "hoje" precisa ser o dia do usuário. O frontend envia `X-Client-Date` e `X-Client-Time` em toda requisição (interceptor do Axios); o middleware `clientClock` valida os valores e os guarda em um `AsyncLocalStorage`, de onde `getToday()` os lê. Sem o header (ou com valor inválido), cai no relógio do servidor.
+
