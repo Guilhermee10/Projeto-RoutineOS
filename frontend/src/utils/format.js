@@ -30,6 +30,12 @@ export function getTodayDateString() {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
+// Hora local atual "HH:MM" (o backend usa nas notificações de "começa em breve").
+export function getLocalTimeString() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
 // Devolve as 7 datas (strings "AAAA-MM-DD") de uma semana, segunda a
 // domingo. weekOffset=0 é a semana atual, -1 a anterior, 1 a próxima.
 // Mesma convenção UTC usada no backend (ver dateUtils.js lá), pra uma

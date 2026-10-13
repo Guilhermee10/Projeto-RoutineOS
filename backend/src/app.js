@@ -21,6 +21,7 @@ const calendarRoutes = require('./routes/calendarRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const { apiLimiter } = require('./middlewares/rateLimiter');
+const clientClock = require('./middlewares/clientClock');
 
 const app = express();
 
@@ -37,6 +38,9 @@ app.use(morgan('dev'));
 // Limite de tamanho do body: evita que alguém mande JSONs gigantes
 app.use(express.json({ limit: '100kb' }));
 app.use('/api', apiLimiter);
+// Lê a data/hora local do usuário (headers X-Client-*) e disponibiliza
+// pra getToday() durante esta requisição.
+app.use('/api', clientClock);
 
 // Rota de verificação de saúde da API
 app.get('/api/health', (req, res) => {

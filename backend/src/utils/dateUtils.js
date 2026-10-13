@@ -5,6 +5,8 @@
 // (new Date("2026-09-28") = meia-noite UTC), e evita que o resultado
 // mude dependendo do fuso horário do servidor.
 
+const { getClientDate } = require('./requestContext');
+
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
 // Zera a hora, mantendo só o dia de calendário (em UTC).
@@ -18,10 +20,14 @@ function endOfDay(date) {
   return new Date(startOfDay(date).getTime() + MS_IN_DAY - 1);
 }
 
-// "Hoje" segundo o calendário do relógio do servidor. Por isso o
-// servidor deve rodar com TZ configurado (ex: TZ=America/Bahia); senão
-// "hoje" seria o dia em UTC, que vira o dia seguinte às 21h no Brasil.
+// "Hoje". Ordem de prioridade:
+//  1) a data local que o navegador do usuário enviou (X-Client-Date) -
+//     é o que garante o dia certo mesmo com o servidor em UTC (AWS);
+//  2) o calendário do relógio do servidor (testes, chamadas sem header).
+//     Nesse caso o servidor deveria ter TZ configurado.
 function getToday() {
+  const clientDate = getClientDate();
+  if (clientDate) return clientDate;
   const now = new Date();
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 }

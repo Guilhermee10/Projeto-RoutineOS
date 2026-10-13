@@ -1,6 +1,7 @@
 const activityRepository = require('../repositories/activityRepository');
 const goalService = require('../services/goalService');
 const { getToday } = require('../utils/dateUtils');
+const { getClientTime } = require('../utils/requestContext');
 const {
   getCurrentTimeString,
   getUpcomingActivityNotifications,
@@ -16,7 +17,7 @@ async function getNotifications(userId) {
   const dayOfWeek = getToday().getUTCDay();
   const todaysActivities = activities.filter((a) => a.daysOfWeek.includes(dayOfWeek));
 
-  const upcoming = getUpcomingActivityNotifications(todaysActivities, getCurrentTimeString());
+  const upcoming = getUpcomingActivityNotifications(todaysActivities, getClientTime() || getCurrentTimeString());
   const goalsNear = getGoalProgressNotifications(goals);
 
   return [...upcoming, ...goalsNear];

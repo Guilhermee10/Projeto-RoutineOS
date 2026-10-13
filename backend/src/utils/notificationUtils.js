@@ -1,11 +1,8 @@
 const { timeToMinutes } = require('./timeUtils');
 
-// ATENÇÃO - única parte do projeto que usa hora LOCAL do servidor em
-// vez de UTC. Notificação de "está chegando" só faz sentido comparada
-// à hora real do relógio de parede, não à data em UTC que usamos pra
-// tudo mais. Isso assume que o servidor roda no mesmo fuso do usuário
-// (razoável pra um app pessoal de um usuário só; numa aplicação
-// multi-usuário precisaria de fuso configurável por pessoa).
+// Fallback: hora LOCAL do servidor. Em uso normal a hora vem do navegador
+// (header X-Client-Time, ver clientClock em middlewares/clientClock.js);
+// isto só vale pra chamadas sem esse header.
 function getCurrentTimeString(now = new Date()) {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }

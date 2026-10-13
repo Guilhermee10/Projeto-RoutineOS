@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getTodayDateString, getLocalTimeString } from '../utils/format';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
 
@@ -15,6 +16,10 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Informa ao backend o dia/hora LOCAIS do usuário: o servidor na AWS
+  // roda em UTC e, sem isso, "hoje" viraria amanhã às 21h (horário de Brasília).
+  config.headers['X-Client-Date'] = getTodayDateString();
+  config.headers['X-Client-Time'] = getLocalTimeString();
   return config;
 });
 
