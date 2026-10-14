@@ -1,6 +1,6 @@
 # RoutineOS
 
-[![CI](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml/badge.svg)](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml)
+[![CI](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml/badge.svg)
 
 Plataforma pessoal de organização, acompanhamento e otimização de rotina.
 
