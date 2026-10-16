@@ -14,6 +14,16 @@ Plataforma pessoal de organização, acompanhamento e otimização de rotina: at
 - **Qualidade**: testes unitários (Jest) sobre as regras de negócio, E2E (Cypress) e CI no GitHub Actions rodando tudo a cada push.
 - **Infra como produto**: imagens Docker multi-stage, migrations em um serviço separado e deploy completo na AWS.
 
+## Telas
+
+| Dashboard | Calendário semanal |
+|---|---|
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Calendário](docs/screenshots/02-calendario.png) |
+
+| Metas | Motor de otimização |
+|---|---|
+| ![Metas](docs/screenshots/03-metas.png) | ![Otimização](docs/screenshots/04-otimizacao.png) |
+
 ## Arquitetura (AWS)
 
 ```mermaid
@@ -563,9 +573,10 @@ português, com um destaque da semana e uma sugestão prática. Usa o
 pacote oficial `@anthropic-ai/sdk`.
 
 **Configuração (opcional):** sem `ANTHROPIC_API_KEY` no `.env`, o
-endpoint responde com um erro 503 claro (`"Resumo por IA não está
-configurado..."`) em vez de quebrar o resto do app - o resto do
-RoutineOS funciona 100% sem essa variável. Pra habilitar, pegue uma
+endpoint responde com um 503 (`"O resumo por IA é um recurso opcional
+e está desativado nesta demonstração."`) e a tela mostra um aviso
+informativo, não um erro - o resto do RoutineOS funciona 100% sem essa
+variável. Pra habilitar, pegue uma
 key em https://console.anthropic.com e preencha:
 ```
 ANTHROPIC_API_KEY=sk-ant-...
