@@ -28,7 +28,7 @@ direto ao resumo em prosa.`;
 async function generateWeeklySummary(userId, referenceDateString) {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new AppError(
-      'Resumo por IA não está configurado - defina ANTHROPIC_API_KEY no .env do backend.',
+      'O resumo por IA é um recurso opcional e está desativado nesta demonstração.',
       503
     );
   }

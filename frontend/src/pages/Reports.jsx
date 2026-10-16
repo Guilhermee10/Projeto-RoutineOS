@@ -10,6 +10,8 @@ function Reports() {
   const [aiSummary, setAiSummary] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
+  // aviso neutro (não é erro): recurso opcional desativado no servidor
+  const [aiNotice, setAiNotice] = useState('');
 
   useEffect(() => {
     reportService
@@ -22,13 +24,22 @@ function Reports() {
   async function handleGenerateAiSummary() {
     setAiLoading(true);
     setAiError('');
+    setAiNotice('');
     try {
       const result = await reportService.getAiSummary();
       setAiSummary(result.summary);
     } catch (err) {
-      // 503 = API key não configurada no backend; outros erros são
-      // falha ao chamar a API da Anthropic (rede, limite, etc.)
-      setAiError(err.response?.data?.error || 'Não foi possível gerar o resumo agora.');
+      if (err.response?.status === 503) {
+        // 503 = recurso opcional sem API key no backend: não é uma falha,
+        // então mostramos um aviso informativo em vez de um erro vermelho.
+        setAiNotice(
+          err.response?.data?.error ||
+            'O resumo por IA é um recurso opcional e está desativado nesta demonstração.'
+        );
+      } else {
+        // outros erros: falha ao chamar a API da Anthropic (rede, limite, etc.)
+        setAiError(err.response?.data?.error || 'Não foi possível gerar o resumo agora.');
+      }
     } finally {
       setAiLoading(false);
     }
@@ -47,6 +58,7 @@ function Reports() {
       <section className="card">
         <h2>✨ Resumo da Semana (IA)</h2>
         {aiSummary && <p>{aiSummary}</p>}
+        {aiNotice && <p className="muted">ℹ️ {aiNotice}</p>}
         {aiError && <p className="alert-error">{aiError}</p>}
         <button onClick={handleGenerateAiSummary} disabled={aiLoading}>
           {aiLoading ? 'Gerando...' : aiSummary ? 'Gerar de novo' : 'Gerar resumo'}
