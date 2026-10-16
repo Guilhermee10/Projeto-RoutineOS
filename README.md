@@ -16,13 +16,17 @@ Plataforma pessoal de organização, acompanhamento e otimização de rotina: at
 
 ## Telas
 
-| Dashboard | Calendário semanal |
+| Dashboard | Diário (agenda e distribuição do dia) |
 |---|---|
-| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Calendário](docs/screenshots/02-calendario.png) |
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Diário](docs/screenshots/02-diario.png) |
 
 | Metas | Motor de otimização |
 |---|---|
 | ![Metas](docs/screenshots/03-metas.png) | ![Otimização](docs/screenshots/04-otimizacao.png) |
+
+| Calendário semanal |
+|---|
+| ![Calendário](docs/screenshots/05-calendario.png) |
 
 ## Arquitetura (AWS)
 
