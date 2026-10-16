@@ -1,10 +1,40 @@
 # RoutineOS
 
-[![CI](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml/badge.svg)](https://github.com/Guilhermee10/routineos/actions/workflows/ci.yml)
 
-Plataforma pessoal de organização, acompanhamento e otimização de rotina.
+Plataforma pessoal de organização, acompanhamento e otimização de rotina: atividades, sono, estudos, treinos, escala de trabalho, metas flexíveis, streaks, calendário semanal e um motor que sugere horários livres para a rotina.
 
-> Projeto em desenvolvimento (correção: edição de registros quebrava por campos extras no payload - whitelist de campos nos services).
+**Demo no ar:** https://d31x82vzvqqgvb.cloudfront.net (hospedada na AWS; use apenas dados de teste)
+
+## Destaques técnicos
+
+- **Backend em camadas** (rotas → controllers → services → repositories/Prisma), whitelist de campos nas escritas e validação das variáveis de ambiente na partida.
+- **Autenticação**: JWT de acesso curto + refresh token com rotação, bcrypt (custo 12), login com tempo constante e rate limiting.
+- **Fuso horário correto no servidor UTC**: o frontend envia a data/hora local em cabeçalhos (`X-Client-Date`/`X-Client-Time`), um middleware valida e guarda no `AsyncLocalStorage`, e os services leem "hoje" do usuário sem receber parâmetro extra.
+- **Qualidade**: testes unitários (Jest) sobre as regras de negócio, E2E (Cypress) e CI no GitHub Actions rodando tudo a cada push.
+- **Infra como produto**: imagens Docker multi-stage, migrations em um serviço separado e deploy completo na AWS.
+
+## Arquitetura (AWS)
+
+```mermaid
+flowchart LR
+  U[Navegador] -->|HTTPS| CF[CloudFront]
+  CF -->|"/* (OAC)"| S3[(S3 privado<br/>React estático)]
+  CF -->|"/api/*"| EC2[EC2 + Docker<br/>API Node/Express]
+  EC2 -->|"5432, só do SG da API"| RDS[(RDS PostgreSQL)]
+  EC2 -.->|logs e métricas| CW[CloudWatch]
+```
+
+| Camada | Decisão |
+|---|---|
+| Entrada única | CloudFront serve o site e encaminha `/api/*` para a API na mesma origem (sem CORS, sem mixed content) |
+| Front-end | Build do Vite em bucket S3 **privado**, lido só pela distribuição (Origin Access Control) |
+| API | Docker na EC2; a porta 80 aceita apenas a lista de prefixos do CloudFront |
+| Banco | RDS PostgreSQL em VPC, sem acesso público; a porta do banco só aceita o security group da API |
+| Acesso administrativo | Session Manager (SSM) em vez de SSH, com função IAM de menor privilégio |
+| Custos | Plano Free da AWS, orçamento com alerta por e-mail e alarme de CPU no CloudWatch |
+
+Passo a passo do deploy: ver [seção Deploy na AWS](#deploy-na-aws).
 
 ## Como rodar
 
@@ -570,7 +600,7 @@ regressão.
 
 ## Stack
 
-Node.js · Express · PostgreSQL · React · Cypress · Jest · Docker · AWS
+Node.js · Express · Prisma · PostgreSQL · JWT · React · Vite · Jest · Cypress · Docker · GitHub Actions · AWS (EC2, RDS, S3, CloudFront, IAM, CloudWatch, SSM)
 
 ## Estrutura do projeto
 
@@ -679,3 +709,15 @@ Segurança do pipeline: permissões mínimas (`contents: read`), segredos de CI 
 
 O servidor roda em UTC (AWS), mas "hoje" precisa ser o dia do usuário. O frontend envia `X-Client-Date` e `X-Client-Time` em toda requisição (interceptor do Axios); o middleware `clientClock` valida os valores e os guarda em um `AsyncLocalStorage`, de onde `getToday()` os lê. Sem o header (ou com valor inválido), cai no relógio do servidor.
 
+## Deploy na AWS
+
+Arquivos: `docker-compose.prod.yml` (serviços `migrate` + `backend`) e `.env.production.example`.
+
+1. **RDS PostgreSQL** (VPC padrão, sem acesso público) com security group que só aceita a porta do banco vinda do security group da API.
+2. **EC2** com Docker, função IAM (SSM + CloudWatch Agent) e acesso pelo Session Manager.
+3. Na EC2: `cp .env.production.example .env`, preencher `DATABASE_URL` (com `sslmode=require`), `JWT_SECRET` (32+ caracteres) e `CORS_ORIGIN`; depois `docker compose -f docker-compose.prod.yml up -d --build`. O serviço `migrate` aplica as migrations e a API só sobe depois que ele termina com sucesso.
+4. **Front-end**: `VITE_API_URL=/api npm run build` e upload do conteúdo de `dist/` para um bucket S3 privado.
+5. **CloudFront** com duas origens: S3 (comportamento padrão, via OAC, com uma CloudFront Function que reescreve rotas do React para `/index.html`) e a EC2 (`/api/*`, cache desativado, todos os métodos HTTP, política `AllViewerExceptHostHeader`).
+6. **Hardening**: porta 80 da EC2 restrita à lista gerenciada `com.amazonaws.global.cloudfront.origin-facing` (a versão **IPv4**), sem SSH e sem porta 443 aberta.
+
+Segredos (`.env`) ficam só no servidor e nunca no repositório.
