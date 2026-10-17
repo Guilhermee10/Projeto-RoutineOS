@@ -6,6 +6,12 @@ Plataforma pessoal de organização, acompanhamento e otimização de rotina: at
 
 **Demo no ar:** https://d31x82vzvqqgvb.cloudfront.net (hospedada na AWS; use apenas dados de teste)
 
+## Demonstração
+
+Clique na imagem para assistir ao vídeo (43 s, sem áudio) ou acesse a [demo no ar](https://d31x82vzvqqgvb.cloudfront.net).
+
+[![Demonstração do RoutineOS](docs/screenshots/00-demo-thumb.png)](docs/demo.mp4)
+
 ## Destaques técnicos
 
 - **Backend em camadas** (rotas → controllers → services → repositories/Prisma), whitelist de campos nas escritas e validação das variáveis de ambiente na partida.
